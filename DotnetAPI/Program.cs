@@ -16,6 +16,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 
+
 Console.WriteLine("Access key: " + builder.Configuration["SPACES_KEY"]);
 var app = builder.Build();
 
