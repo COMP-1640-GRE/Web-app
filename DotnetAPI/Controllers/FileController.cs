@@ -77,36 +77,43 @@ namespace DotnetAPI.Controllers
 
         [HttpDelete]
         public async Task<IActionResult> DeleteFileAsync(string fileUrl)
-{
-    var config = new AmazonS3Config
-    {
-        ServiceURL = $"https://{Space}.{Region}.digitaloceanspaces.com",
-        ForcePathStyle = true
-    };
-
-    try
-    {
-        using var client = new AmazonS3Client(Key, Secret, config);
-
-        // Extract the file key from the URL
-        var uri = new Uri(fileUrl);
-        var fileKey = uri.AbsolutePath.Substring(uri.AbsolutePath.IndexOf(Space) + Space.Length + 1);
-
-        var deleteRequest = new DeleteObjectRequest
         {
-            BucketName = Space,
-            Key = fileKey
-        };
+            var config = new AmazonS3Config
+            {
+                ServiceURL = $"https://{Space}.{Region}.digitaloceanspaces.com",
+                ForcePathStyle = true
+            };
 
-        await client.DeleteObjectAsync(deleteRequest);
-    }
-    catch (Exception e)
-    {
-        return BadRequest(e.Message);
-    }
+            try
+            {
+                using var client = new AmazonS3Client(Key, Secret, config);
 
-    return Ok("File deleted successfully");
-}
+                // Extract the file key from the URL
+                var uri = new Uri(fileUrl);
+                var fileKey = uri.AbsolutePath.Substring(uri.AbsolutePath.IndexOf(Space) + Space.Length + 1);
+                Console.WriteLine(fileKey);
+
+                var deleteRequest = new DeleteObjectRequest
+                {
+                    BucketName = Space,
+                    Key = fileKey
+                };
+
+                var temp = await client.DeleteObjectAsync(deleteRequest);
+                Console.WriteLine(temp);
+            }
+            catch (Amazon.Runtime.Internal.HttpErrorResponseException ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return BadRequest($"Amazon error: {ex.Message}");
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+
+            return Ok("File deleted successfully");
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetFileAsync(string filepath)
