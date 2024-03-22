@@ -99,8 +99,27 @@ namespace DotnetAPI.Controllers
                     Key = fileKey
                 };
 
-                var temp = await client.DeleteObjectAsync(deleteRequest);
-                Console.WriteLine(temp);
+                var getRequest = new GetObjectRequest
+                {
+                    BucketName = Space,
+                    Key = fileKey
+                };
+
+                try
+                {
+                    var getResponse = await client.GetObjectAsync(getRequest);
+                }
+                catch (AmazonS3Exception e)
+                {
+                    if (e.ErrorCode == "NoSuchKey")
+                    {
+                        return BadRequest("File does not exist");
+                    }
+                    throw;
+                }
+
+                await client.DeleteObjectAsync(deleteRequest);
+
             }
             catch (Amazon.Runtime.Internal.HttpErrorResponseException ex)
             {
