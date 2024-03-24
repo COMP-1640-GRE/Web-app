@@ -10,6 +10,8 @@ using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using System.Web;
 using System.Text;
+using DotnetAPI.Functions;
+using System.IO.Compression;
 
 namespace DotnetAPI.Controllers
 {
@@ -98,24 +100,9 @@ namespace DotnetAPI.Controllers
                     BucketName = Space,
                     Key = fileKey
                 };
-
-                var getRequest = new GetObjectRequest
+                if (!await FileFuncs.VerifyFile(client, fileKey))
                 {
-                    BucketName = Space,
-                    Key = fileKey
-                };
-
-                try
-                {
-                    var getResponse = await client.GetObjectAsync(getRequest);
-                }
-                catch (AmazonS3Exception e)
-                {
-                    if (e.ErrorCode == "NoSuchKey")
-                    {
-                        return BadRequest("File does not exist");
-                    }
-                    throw;
+                    return BadRequest("File not found");
                 }
 
                 await client.DeleteObjectAsync(deleteRequest);
@@ -133,6 +120,8 @@ namespace DotnetAPI.Controllers
 
             return Ok("File deleted successfully");
         }
+
+
 
         [HttpGet]
         public async Task<IActionResult> GetFileAsync(string filepath)
@@ -165,6 +154,44 @@ namespace DotnetAPI.Controllers
             }
 
             return Ok(urls);
+        }
+
+        [HttpPost("downloadMultiple")]
+        public async Task<IActionResult> DownloadFiles([FromBody] List<string> urls, string outputName = "files")
+        {
+            var tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempFolder);
+
+            using var client = new HttpClient();
+
+            var fileKeys = urls.Select(url =>
+            {
+                var uri = new Uri(url);
+                return uri.AbsolutePath.Substring(uri.AbsolutePath.IndexOf(Space) + Space.Length + 1);
+            }).ToList();
+
+            if (!await FileFuncs.VerifyMultipleFiles(new AmazonS3Client
+                (Key,
+                Secret,
+                new AmazonS3Config
+                {
+                    ServiceURL = $"https://{Space}.{Region}.digitaloceanspaces.com",
+                    ForcePathStyle = true
+                }),
+                fileKeys)
+                )
+            {
+                return BadRequest("One or more files not found");
+            }
+
+            var tasks = urls.Select(url => FileFuncs.DownloadAndSaveFile(client, url, tempFolder)).ToList();
+            await Task.WhenAll(tasks);
+
+            var zipPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".zip");
+            ZipFile.CreateFromDirectory(tempFolder, zipPath);
+
+            var zipBytes = await System.IO.File.ReadAllBytesAsync(zipPath);
+            return File(zipBytes, "application/zip", outputName + ".zip");
         }
     }
 }
