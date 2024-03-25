@@ -93,6 +93,8 @@ namespace DotnetAPI.Controllers
                 // Extract the file key from the URL
                 var uri = new Uri(fileUrl);
                 var fileKey = uri.AbsolutePath.Substring(uri.AbsolutePath.IndexOf(Space) + Space.Length + 1);
+                // change %20 to space in fileKey
+                fileKey = fileKey.Replace("%20", " ");
                 Console.WriteLine(fileKey);
 
                 var deleteRequest = new DeleteObjectRequest
