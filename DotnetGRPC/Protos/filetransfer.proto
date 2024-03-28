@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+option csharp_namespace = "DotnetGRPC";
+
+package filetransfer;
+
+service FileTransfer {
+  rpc UploadFiles(UploadFilesRequest) returns (UploadFilesResponse);
+  rpc DeleteFile(DeleteFileRequest) returns (DeleteFileResponse);
+  rpc DownloadMultipleFileAsZip(DownloadMultipleFileAsZipRequest)
+      returns (DownloadMultipleFileAsZipResponse);
+}
+
+message UploadFilesRequest {
+  repeated string filenames = 1;
+  repeated bytes files = 2;
+  string filepath = 3;
+}
+
+message UploadFilesResponse { repeated string urls = 1; }
+
+message DeleteFileRequest { string url = 1; }
+
+message DeleteFileResponse { string message = 1; }
+
+message DownloadMultipleFileAsZipRequest {
+  string filename = 1;
+  repeated string urls = 2;
+}
+
+message DownloadMultipleFileAsZipResponse {
+  string name = 1;
+  bytes zip = 2;
+}

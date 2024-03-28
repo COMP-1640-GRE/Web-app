@@ -23,10 +23,10 @@ jobs:
           include-prerelease: true
 
       - name: Build with dotnet
-        run: dotnet build ./DotnetAPI --configuration Release
+        run: dotnet build ./DotnetGRPC --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish ./DotnetAPI -c Release -o ${{env.DOTNET_ROOT}}/myapp --self-contained
+        run: dotnet publish ./DotnetGRPC -c Release -o ${{env.DOTNET_ROOT}}/myapp --self-contained
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
