@@ -32,8 +32,8 @@ if (app.Environment.IsDevelopment())
     DotnetGRPC.GlobalVariables.Blob.Secret = config["SPACE_SECRET"];
 }
 else {
-    DotnetGRPC.GlobalVariables.Blob.Key = builder.Configuration["SPACE_KEY"];
-    DotnetGRPC.GlobalVariables.Blob.Secret = builder.Configuration["SPACE_SECRET"];
+    DotnetGRPC.GlobalVariables.Blob.Key = builder.Configuration["SPACES_KEY"];
+    DotnetGRPC.GlobalVariables.Blob.Secret = builder.Configuration["SPACES_SECRET"];
 }
 
 // Configure the HTTP request pipeline.
