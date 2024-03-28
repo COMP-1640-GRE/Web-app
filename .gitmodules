@@ -3,3 +3,7 @@
 	path = DotnetGRPC/Protos
 	url = https://github.com/COMP-1640-GRE/proto
 	branch = main
+[submodule "DotnetGRPCClient/Protos"]
+	path = DotnetGRPCClient/Protos
+	url = https://github.com/COMP-1640-GRE/proto
+	branch = main
