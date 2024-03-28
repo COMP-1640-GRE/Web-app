@@ -7,6 +7,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'DotnetGRPC/**'
   workflow_dispatch:
 
 jobs:
@@ -22,11 +24,17 @@ jobs:
           dotnet-version: '8.x'
           include-prerelease: true
 
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          token: ${{ secrets.PAT }}
+
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet  build ./DotnetGRPC --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish ./DotnetGRPC -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
