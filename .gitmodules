@@ -1,4 +1,4 @@
 [submodule "DotnetGRPC/proto"]
-	path = DotnetGRPC/proto
-	url = https://github.com/COMP-1640-GRE/proto
+	path = DotnetGRPC/Protos
+	url = https://github.com/COMP-1640-GRE/proto/FileService
 	branch = main
