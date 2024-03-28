@@ -5,7 +5,7 @@ using DotnetGRPC;
 
 Console.WriteLine("Hello World!");
 
-using var channel = GrpcChannel.ForAddress("https://comp1640api.azurewebsites.net:8585");
+using var channel = GrpcChannel.ForAddress("https://comp1640api.azurewebsites.net");
 var client = new Greeter.GreeterClient(channel);
 
 var reply = await client.SayHelloAsync(
