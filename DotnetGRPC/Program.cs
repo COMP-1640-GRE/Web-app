@@ -7,6 +7,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(8080);
+    options.ListenAnyIP(8585, listenOptions =>
+    {
+        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
+    });
+});
+
 builder.Services.AddGrpcSwagger();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -31,7 +40,8 @@ if (app.Environment.IsDevelopment())
     DotnetGRPC.GlobalVariables.Blob.Key = config["SPACE_KEY"];
     DotnetGRPC.GlobalVariables.Blob.Secret = config["SPACE_SECRET"];
 }
-else {
+else
+{
     DotnetGRPC.GlobalVariables.Blob.Key = builder.Configuration["SPACES_KEY"];
     DotnetGRPC.GlobalVariables.Blob.Secret = builder.Configuration["SPACES_SECRET"];
 }
