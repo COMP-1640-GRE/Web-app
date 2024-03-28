@@ -28,6 +28,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
+          token: ${{ secrets.PAT }}
 
       - name: Build with dotnet
         run: dotnet build ./DotnetGRPC --configuration Release
