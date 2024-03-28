@@ -24,6 +24,11 @@ jobs:
           dotnet-version: '8.x'
           include-prerelease: true
 
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
       - name: Build with dotnet
         run: dotnet build ./DotnetGRPC --configuration Release
 
