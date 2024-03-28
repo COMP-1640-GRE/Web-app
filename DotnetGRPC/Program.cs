@@ -7,14 +7,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(8080);
-    options.ListenAnyIP(8585, listenOptions =>
-    {
-        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
-    });
-});
 
 builder.Services.AddGrpcSwagger();
 builder.Services.AddSwaggerGen(c =>
