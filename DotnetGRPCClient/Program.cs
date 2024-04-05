@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using DotnetGRPC;
 using System.IO;
 using Google.Protobuf;
+using Grpc.Core;
 
 Console.WriteLine("Hello World!");
 
@@ -21,7 +22,7 @@ var request = new DownloadMultipleFileAsZipRequest
     }
 };
 
-using var call = client.DownloadMultipleFileAsZip(request);
+using AsyncServerStreamingCall<DownloadMultipleFileAsZipResponse> call = client.DownloadMultipleFileAsZip(request);
 
 long totalBytesRead = 0;
 long totalBytes = 0;
@@ -33,11 +34,8 @@ await foreach (var response in call.ResponseStream.ReadAllAsync())
     Console.WriteLine($"Downloaded {percent}%");
 
     // Write the chunk to a file
-    using (var stream = new FileStream(response.Filename, FileMode.Append))
-    {
-        var bytes = response.Zip.ToByteArray();
-        await stream.WriteAsync(bytes, 0, bytes.Length);
-    }
+    using var fileStream = File.OpenWrite(request.Filename);
+    response.Zip.WriteTo(fileStream);
 }
 
 Console.WriteLine($"File downloaded as {request.Filename}");
