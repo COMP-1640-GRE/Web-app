@@ -16,9 +16,8 @@ var request = new DownloadMultipleFileAsZipRequest
     Filename = "file",
     Urls =
     {
-        "https://comp1640-blob.sgp1.digitaloceanspaces.com/comp1640-blob/path/to/files/file1.txt",
-        "https://comp1640-blob.sgp1.digitaloceanspaces.com/comp1640-blob/path/to/files/file2.txt",
-        "https://comp1640-blob.sgp1.cdn.digitaloceanspaces.com/comp1640-blob/123/comp1640ssh.pem"
+        "https://comp1640-blob.sgp1.cdn.digitaloceanspaces.com/comp1640-blob/demo/2022-01-17%2016-57-52-1.mp4",
+        "https://comp1640-blob.sgp1.cdn.digitaloceanspaces.com/comp1640-blob/demo/Arcane.S01e08.Oil.And.Water.1080P.Nf.Web-Dl.Ddp5.1.Hdr.Hevc-Tepes-1.m4v"
     }
 };
 
@@ -33,8 +32,8 @@ await foreach (var response in call.ResponseStream.ReadAllAsync())
     double percent = (double)totalBytesRead / totalBytes * 100;
     Console.WriteLine($"Downloaded {percent}%");
 
-    // Write the chunk to a file
-    using var fileStream = File.OpenWrite(request.Filename);
+    // Append the chunk to a file
+    using var fileStream = File.Open(request.Filename + ".zip", FileMode.Append);
     response.Zip.WriteTo(fileStream);
 }
 

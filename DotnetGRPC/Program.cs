@@ -1,3 +1,4 @@
+using DotnetGRPC;
 using DotnetGRPC.Services;
 using Microsoft.OpenApi.Models;
 
@@ -6,6 +7,21 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
+// Keep the app alive even if there is no request
+builder.Services.AddGrpcClient<FileTransferService>(o =>
+{
+    o.Address = new Uri("https://comp1640api.azurewebsites.net");
+    o.ChannelOptionsActions.Add(channelOptions =>
+        {
+            channelOptions.HttpHandler = new SocketsHttpHandler
+            {
+                PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan,
+                KeepAlivePingDelay = TimeSpan.FromSeconds(60),
+                KeepAlivePingTimeout = TimeSpan.FromSeconds(30),
+                EnableMultipleHttp2Connections = true
+            };
+        });
+});
 
 
 builder.Services.AddGrpcSwagger();
