@@ -15,6 +15,7 @@ namespace DotnetGRPC.Services
 {
     public class FileTransferService : FileTransfer.FileTransferBase
     {
+        private const int BufferSize = 4096; // or any other value you prefer
         private readonly ILogger<FileTransferService> _logger;
         private AmazonS3Config _config;
         public FileTransferService(ILogger<FileTransferService> logger)
@@ -127,7 +128,10 @@ namespace DotnetGRPC.Services
             };
         }
 
-        public override async Task<DownloadMultipleFileAsZipResponse> DownloadMultipleFileAsZip (DownloadMultipleFileAsZipRequest request, ServerCallContext context)
+        public override async Task DownloadMultipleFileAsZip(
+    DownloadMultipleFileAsZipRequest request,
+    IServerStreamWriter<DownloadMultipleFileAsZipResponse> responseStream,
+    ServerCallContext context)
         {
             string tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(tempFolder);
@@ -161,12 +165,19 @@ namespace DotnetGRPC.Services
 
             string zipFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".zip");
             ZipFile.CreateFromDirectory(tempFolder, zipFile);
-            byte[] byteArray = File.ReadAllBytes(zipFile);
-            return new DownloadMultipleFileAsZipResponse
+
+            using var fileStream = File.OpenRead(zipFile);
+            var buffer = new byte[BufferSize];
+            int bytesRead;
+            while ((bytesRead = await fileStream.ReadAsync(buffer, 0, BufferSize)) > 0)
             {
-                Name = request.Filename + ".zip",
-                Zip = ByteString.CopyFrom(byteArray)
-            };
+                await responseStream.WriteAsync(new DownloadMultipleFileAsZipResponse
+                {
+                    Zip = ByteString.CopyFrom(buffer, 0, bytesRead),
+                    Size = new FileInfo(zipFile).Length,
+                    Name = request.Filename
+                });
+            }
         }
     }
 
