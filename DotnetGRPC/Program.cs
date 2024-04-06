@@ -41,6 +41,8 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
 });
 
+Console.WriteLine($"Backup Token: {DotnetGRPC.GlobalVariables.Database.BackupToken}");
+
 if (app.Environment.IsDevelopment())
 {
     var config = new ConfigurationBuilder()
@@ -51,8 +53,7 @@ if (app.Environment.IsDevelopment())
     // builder.Services.AddAzureClients(x => {
     //     x.UseCredential(new DefaultAzureCredential());
     // });
-    
-    Console.WriteLine($"Backup Token: {DotnetGRPC.GlobalVariables.Database.BackupToken}");
+
 
 }
 else
