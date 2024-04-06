@@ -1,5 +1,6 @@
-using DotnetGRPC;
+using DotnetGRPC.Model.DTO;
 using DotnetGRPC.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Azure;
 using Azure.Identity;
@@ -11,6 +12,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 
+// Add DbContext
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Add repositories
+builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<TemplateRepository>();
+builder.Services.AddScoped<NotificationRepository>();
+
+// Add email service
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 
 builder.Services.AddGrpcSwagger();
@@ -52,6 +64,7 @@ else
 // Configure the HTTP request pipeline.
 app.MapGrpcService<GreeterService>();
 app.MapGrpcService<FileTransferService>();
+app.MapGrpcService<NotificationService>();
 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
 app.MapGrpcReflectionService();
