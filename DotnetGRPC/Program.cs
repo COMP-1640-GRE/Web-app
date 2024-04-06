@@ -1,6 +1,9 @@
 using DotnetGRPC;
 using DotnetGRPC.Services;
 using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.Azure;
+using Azure.Identity;
+using Azure.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +36,12 @@ if (app.Environment.IsDevelopment())
                         .Build();
     DotnetGRPC.GlobalVariables.Blob.Key = config["SPACE_KEY"];
     DotnetGRPC.GlobalVariables.Blob.Secret = config["SPACE_SECRET"];
+    // builder.Services.AddAzureClients(x => {
+    //     x.UseCredential(new DefaultAzureCredential());
+    // });
+    
+    Console.WriteLine($"Backup Token: {DotnetGRPC.GlobalVariables.Database.BackupToken}");
+
 }
 else
 {
