@@ -1,4 +1,5 @@
 using DotnetGRPC.Model;
+using Microsoft.EntityFrameworkCore;
 
 public class UserRepository
 {
@@ -11,6 +12,6 @@ public class UserRepository
 
     public async Task<User> FindByIdAsync(long id)
     {
-        return await _context.User.FindAsync(id);
+        return await _context.User.SingleOrDefaultAsync(user => user.Id == id);
     }
 }

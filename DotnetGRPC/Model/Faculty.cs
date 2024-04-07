@@ -9,9 +9,11 @@ namespace DotnetGRPC.Model
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("id")]
         public long Id { get; set; }
 
         [Required]
+        [Column("name")]
         public string Name { get; set; }
 
         [Required]
