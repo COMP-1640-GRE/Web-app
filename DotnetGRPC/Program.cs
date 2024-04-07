@@ -2,6 +2,9 @@ using DotnetGRPC.Model.DTO;
 using DotnetGRPC.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Hangfire;
+using Hangfire.PostgreSql;
+
 using Microsoft.Extensions.Azure;
 using Azure.Identity;
 using Azure.Core;
@@ -24,6 +27,11 @@ builder.Services.AddScoped<NotificationRepository>();
 // Add email service
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
+// Add Hangfire services
+// builder.Services.AddHangfire(config =>
+//     config.UsePostgreSqlStorage(c =>
+//         c.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))));
+// builder.Services.AddHangfireServer();
 
 builder.Services.AddGrpcSwagger();
 builder.Services.AddSwaggerGen(c =>
@@ -61,6 +69,8 @@ else
     DotnetGRPC.GlobalVariables.Blob.Key = builder.Configuration["SPACES_KEY"];
     DotnetGRPC.GlobalVariables.Blob.Secret = builder.Configuration["SPACES_SECRET"];
 }
+
+// app.UseHangfireDashboard();
 
 // Configure the HTTP request pipeline.
 app.MapGrpcService<GreeterService>();
