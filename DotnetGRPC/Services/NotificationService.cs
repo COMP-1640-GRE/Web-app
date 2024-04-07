@@ -1,7 +1,5 @@
 using System.Net.Mail;
 using DotnetGRPC.Model.DTO;
-using DotnetGRPC.Model;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Grpc.Core;
 using System.Net;
@@ -27,26 +25,24 @@ namespace DotnetGRPC.Services
             _notificationRepository = notificationRepository;
         }
 
-        public async Task SendEmailAsync(long studentUserId, string templateCode, long staffUserId, string option)
+        public async Task SendEmailAsync(long studentUserId, string templateCode, string option)
         {
             if (studentUserId == 0)
             {
                 throw new ArgumentException("Student is null");
             }
 
-            var student = await _userRepository.FindByIdAsync(studentUserId);
-            var staff = await _userRepository.FindByIdAsync(staffUserId);
-            var template = await _templateRepository.FindByTemplateCodeAsync(templateCode);
+            var student = await _userRepository.FindByIdAsync(studentUserId) ?? throw new ArgumentException("Student not found");
+            var template = await _templateRepository.FindByTemplateCodeAsync(templateCode) ?? throw new ArgumentException("Template not found");
             using (var mailMessage = new MailMessage())
             {
                 mailMessage.To.Add(new MailAddress(student.Email));
-                mailMessage.From = new MailAddress(staff.Email);
+                mailMessage.From = new MailAddress("hungcuong28597@gmail.com");
                 mailMessage.Subject = template.TemplateName;
                 mailMessage.Body = template.TemplateContent
                     .Replace("[Student Name]", $"{student.FirstName} {student.LastName}")
-                    .Replace("[Name]", $"{staff.FirstName} {staff.LastName}")
-                    .Replace("[Role]", staff.Role.ToString())
-                    .Replace("[choose appropriate option]", option);
+                    .Replace("[choose appropriate option]", option)
+                    .Replace("[6-Letter Code]", option);
                 mailMessage.IsBodyHtml = true;
 
                 using (var smtpClient = new SmtpClient(_emailSettings.Host, _emailSettings.Port))
@@ -60,28 +56,36 @@ namespace DotnetGRPC.Services
 
         public override async Task<NotificationResponse> sendNotification(NotificationRequest request, ServerCallContext context)
         {
-            if (request.WithEmail)
+            var content = string.Empty;
+
+            if (request.TemplateCode != "reset_pw_email")
             {
-                await SendEmailAsync(request.StudentUserid, request.TemplateCode.Replace("noti", "email"), request.StaffUserid, request.Option);
+                if (request.WithEmail)
+                {
+                    await SendEmailAsync(request.UserId, request.TemplateCode.Replace("noti", "email"), request.Option);
+                }
+                var template = await _templateRepository.FindByTemplateCodeAsync(request.TemplateCode);
+                content = template.TemplateContent.Replace("[choose appropriate option]", request.Option);
+
+                var notification = new Model.Notification
+                {
+                    Content = content,
+                    Seen = false,
+                    UserId = request.UserId,
+                    WithEmail = request.WithEmail
+                };
+
+                await _notificationRepository.SaveAsync(notification);
             }
-
-            var template = await _templateRepository.FindByTemplateCodeAsync(request.TemplateCode);
-            var content = template.TemplateContent.Replace("[choose appropriate option]", request.Option);
-
-            var notification = new Model.Notification
+            else
             {
-                Content = content,
-                Seen = false,
-                UserId = request.StudentUserid,
-                WithEmail = request.WithEmail
-            };
-
-            await _notificationRepository.SaveAsync(notification);
-
+                await SendEmailAsync(request.UserId, request.TemplateCode, request.Option);
+            }
             var notificationResponse = new NotificationResponse
             {
                 Content = content,
-                StudentUserid = notification.UserId,
+                UserId = request.UserId,
+                WithEmail = request.WithEmail
             };
 
             return notificationResponse;
@@ -89,14 +93,14 @@ namespace DotnetGRPC.Services
 
         public override async Task getListNotifications(ListNotificationRequest request, IServerStreamWriter<NotificationResponse> responseStream, ServerCallContext context)
         {
-            var notifications = await _notificationRepository.GetNotifications(request.StudentUserid, request.Seen);
+            var notifications = await _notificationRepository.GetNotifications(request.UserId, request.Seen);
 
             foreach (var notification in notifications)
             {
                 var notificationResponse = new NotificationResponse
                 {
                     Content = notification.Content,
-                    StudentUserid = notification.UserId,
+                    UserId = notification.UserId,
                 };
 
                 await responseStream.WriteAsync(notificationResponse);
@@ -104,3 +108,4 @@ namespace DotnetGRPC.Services
         }
     }
 }
+

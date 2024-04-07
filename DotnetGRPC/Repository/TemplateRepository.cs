@@ -2,8 +2,6 @@ using DotnetGRPC.Model;
 using Microsoft.EntityFrameworkCore;
 
 public class TemplateRepository
-
-
 {
     private readonly AppDbContext _context;
 
@@ -16,6 +14,4 @@ public class TemplateRepository
     {
         return await _context.Template.FirstOrDefaultAsync(t => t.TemplateCode == templateCode);
     }
-
-    // Add other methods as needed
 }

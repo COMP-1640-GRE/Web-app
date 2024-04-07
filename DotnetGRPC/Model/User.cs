@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
 namespace DotnetGRPC.Model
 {
     [Table("user")]
@@ -26,33 +25,26 @@ namespace DotnetGRPC.Model
 
         [Required]
         [Column("role")]
-        public RoleType Role { get; set; }
+        public string Role { get; set; }
 
-        public enum RoleType
-        {
-            Administrator, Student, Guest
-        }
+        // public enum RoleType
+        // {
+        //     Administrator, Student, Guest
+        // }
 
         [Required]
         [Column("email")]
         public string Email { get; set; }
 
-        [Required]
         [Column("first_name")]
-        public string FirstName { get; set; }
+        public string? FirstName { get; set; }
 
-        [Required]
         [Column("last_name")]
-        public string LastName { get; set; }
+        public string? LastName { get; set; }
 
         [Required]
         [Column("account_status")]
-        public AccountType AccountStatus { get; set; }
-
-        public enum AccountType
-        {
-            Active, Locked, Inactive
-        }
+        public string AccountStatus { get; set; }
 
         [Required]
         [Column("created_at")]
@@ -64,5 +56,8 @@ namespace DotnetGRPC.Model
 
         [ForeignKey("FacultyId")]
         public Faculty Faculty { get; set; }
+
+        [Column("faculty_id")]
+        public long? FacultyId { get; set; }
     }
 }
