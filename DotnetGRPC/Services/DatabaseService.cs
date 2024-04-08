@@ -148,7 +148,7 @@ namespace DotnetGRPC.Services
                     recoveryOption = "FailIfExists",
                     targetDetails = new TargetDetails
                     {
-                        url = "https://cs1100320024861958a.blob.core.windows.net/comp1640blob",
+                        url = $"https://cs1100320024861958a.blob.core.windows.net/comp1640blob/backups/{DateTime.Now.ToString("yyyy-MM-dd")}",
                         filePrefix = "restoredblob",
                         restoreTargetLocationType = "AzureBlobs"
                     },
