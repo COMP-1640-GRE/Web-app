@@ -14,4 +14,11 @@ public class UserRepository
     {
         return await _context.User.SingleOrDefaultAsync(user => user.Id == id);
     }
+
+    public async Task<List<User>> FindFacultyCoordinators(long facultyId)
+    {
+        return await _context.User
+            .Where(user => user.FacultyId == facultyId && user.Role != "student")
+            .ToListAsync();
+    }
 }

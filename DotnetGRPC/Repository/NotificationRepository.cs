@@ -17,7 +17,7 @@ public class NotificationRepository
 
     public async Task SaveAsync(Notification notification)
     {
-        notification.CreatedAt = notification.CreatedAt.ToUniversalTime();
+        notification.CreatedAt = DateTime.UtcNow;
         _context.Notification.Add(notification);
         await _context.SaveChangesAsync();
     }
