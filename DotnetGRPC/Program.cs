@@ -23,15 +23,20 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<TemplateRepository>();
 builder.Services.AddScoped<NotificationRepository>();
+builder.Services.AddScoped<FacultyRepository>();
+builder.Services.AddScoped<ContributionRepository>();
+
+// Add services
+builder.Services.AddScoped<NotificationService>();
 
 // Add email service
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 // Add Hangfire services
-// builder.Services.AddHangfire(config =>
-//     config.UsePostgreSqlStorage(c =>
-//         c.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))));
-// builder.Services.AddHangfireServer();
+builder.Services.AddHangfire(config =>
+    config.UsePostgreSqlStorage(c =>
+        c.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))));
+builder.Services.AddHangfireServer();
 
 builder.Services.AddGrpcSwagger();
 builder.Services.AddSwaggerGen(c =>
@@ -70,7 +75,10 @@ else
     DotnetGRPC.GlobalVariables.Blob.Secret = builder.Configuration["SPACES_SECRET"];
 }
 
-// app.UseHangfireDashboard();
+app.UseHangfireDashboard();
+app.UseHangfireServer();
+
+RecurringJob.AddOrUpdate<NotificationService>(service => service.SendNotifyPendingContribution(), Cron.Daily);
 
 // Configure the HTTP request pipeline.
 app.MapGrpcService<GreeterService>();
