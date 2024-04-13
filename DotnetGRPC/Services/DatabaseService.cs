@@ -10,6 +10,13 @@ using Grpc.Core;
 using ProtoBuf;
 using Newtonsoft.Json;
 using static DotnetGRPC.RecoveryPoint;
+using Microsoft.Azure.Management.PostgreSQL.FlexibleServers.Models;
+using Microsoft.Azure.Management.PostgreSQL.FlexibleServers;
+using Microsoft.Azure.Management.PostgreSQL.Models;
+using Microsoft.Azure.Management.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent;
+using Microsoft.Rest;
+using Newtonsoft.Json.Linq;
 
 namespace DotnetGRPC.Services
 {
@@ -172,6 +179,123 @@ namespace DotnetGRPC.Services
             }
 
             return new Empty();
+        }
+
+        public override async Task<Empty> RestoreDatabaseToAnother(RestoreDatabaseToAnotherRequest restoreDatabaseToAnotherRequest, ServerCallContext context)
+        {
+            // Create a PostgreSQL management client
+            var credentials = new Microsoft.Rest.TokenCredentials(GlobalVariables.Database.BackupToken);
+            var postgresqlManagementClient = new PostgreSQLManagementClient(credentials)
+            {
+                SubscriptionId = "5f459f53-780f-4ffc-8604-0e47bbbfb746"
+            };
+
+            // Create a new server instance
+            var server = new Microsoft.Azure.Management.PostgreSQL.FlexibleServers.Models.Server
+            {
+                Location = "southeastasia",
+
+                // Properties = new ServerPropertiesForDefaultCreate
+                // {
+                //     CreateMode = CreateMode.PointInTimeRestore,
+                //     SourceServerId = sourceServerId,
+                //     RestorePointInTime = restorePointInTime
+                // }
+                CreateMode = "PointInTimeRestore",
+                PointInTimeUTC = DateTime.Parse(restoreDatabaseToAnotherRequest.RestoreDate),
+                SourceServerResourceId = $"/subscriptions/5f459f53-780f-4ffc-8604-0e47bbbfb746/resourceGroups/Comp-1640/providers/Microsoft.DBforPostgreSQL/flexibleServers/{restoreDatabaseToAnotherRequest.SourceName}",
+
+                Sku = new Microsoft.Azure.Management.PostgreSQL.FlexibleServers.Models.Sku
+                {
+                    Name = "Standard_B1ms",
+                    Tier = "Burstable"
+                },
+
+            };
+
+            // Start the create operation
+            var operation = await postgresqlManagementClient.Servers.CreateAsync("Comp-1640", restoreDatabaseToAnotherRequest.ServerName, server);
+
+            // Wait for the operation to complete
+            // var result = await operation.WaitForCompletionAsync();
+
+            Console.WriteLine($"Done create the {operation.Id}");
+
+            // Stop the source server
+            // await postgresqlManagementClient.Servers.StopAsync("Comp-1640", restoreDatabaseToAnotherRequest.SourceName);
+
+
+            return new Empty();
+        }
+
+        public override async Task<Empty> StopDatabase(StopDatabaseRequest stopDatabaseRequest, ServerCallContext context)
+        {
+            // Create a PostgreSQL management client
+            var credentials = new Microsoft.Rest.TokenCredentials(GlobalVariables.Database.BackupToken);
+            var postgresqlManagementClient = new PostgreSQLManagementClient(credentials)
+            {
+                SubscriptionId = "5f459f53-780f-4ffc-8604-0e47bbbfb746"
+            };
+
+            // Stop the server
+            await postgresqlManagementClient.Servers.StopAsync("Comp-1640", stopDatabaseRequest.ServerName);
+
+            return new Empty();
+        }
+
+        public override async Task<Empty> StartDatabase(StartDatabaseRequest startDatabaseRequest, ServerCallContext context)
+        {
+            // Create a PostgreSQL management client
+            var credentials = new Microsoft.Rest.TokenCredentials(GlobalVariables.Database.BackupToken);
+            var postgresqlManagementClient = new PostgreSQLManagementClient(credentials)
+            {
+                SubscriptionId = "5f459f53-780f-4ffc-8604-0e47bbbfb746"
+            };
+
+            // Stop the server
+            await postgresqlManagementClient.Servers.StartAsync("Comp-1640", startDatabaseRequest.ServerName);
+
+            return new Empty();
+        }
+
+        public override async Task<DatabaseServersResponse> GetDatabaseServers(Empty request, ServerCallContext context)
+        {
+            var token = GlobalVariables.Database.BackupToken; // Replace with your JWT token
+
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                var url = "https://management.azure.com/subscriptions/5f459f53-780f-4ffc-8604-0e47bbbfb746/resourceGroups/Comp-1640/providers/Microsoft.DBforPostgreSQL/flexibleServers?api-version=2023-12-01-preview";
+                var response = await client.GetAsync(url);
+
+                var databaseServersResponse = new DatabaseServersResponse();
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    // Console.WriteLine(content);
+                    var resources = JObject.Parse(content)["value"].ToObject<JArray>();
+                    Console.WriteLine(resources);
+
+                    foreach (var resource in resources)
+                    {
+                        var databaseServer = new DatabaseServer
+                        {
+                            Name = resource["name"].ToString(),
+                            CreatedAt = resource["systemData"]["createdAt"].ToString(),
+                            State = resource["properties"]["state"].ToString(),
+                        };
+
+                        databaseServersResponse.DatabaseServers.Add(databaseServer);
+                    }
+                }
+                else
+                {
+                    // Handle the error...
+                }
+
+                return databaseServersResponse;
+            }
         }
     }
 }
