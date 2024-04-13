@@ -284,6 +284,8 @@ namespace DotnetGRPC.Services
                             Name = resource["name"].ToString(),
                             CreatedAt = resource["systemData"]["createdAt"].ToString(),
                             State = resource["properties"]["state"].ToString(),
+                            BackupRetentionDays = int.Parse(resource["properties"]["backup"]["backupRetentionDays"].ToString()),
+                            EarliestRestoreDate = resource["properties"]["backup"]["earliestRestoreDate"].ToString(),
                         };
 
                         databaseServersResponse.DatabaseServers.Add(databaseServer);
