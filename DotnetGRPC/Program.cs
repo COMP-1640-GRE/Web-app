@@ -2,8 +2,8 @@ using DotnetGRPC.Model.DTO;
 using DotnetGRPC.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using Hangfire;
-using Hangfire.PostgreSql;
+// using Hangfire;
+// using Hangfire.PostgreSql;
 
 using Microsoft.Extensions.Azure;
 using Azure.Identity;
@@ -34,10 +34,10 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 // Add Hangfire services
-builder.Services.AddHangfire(x =>
-    x.UsePostgreSqlStorage(builder.Configuration.GetConnectionString("HangfireConnection")));
+// builder.Services.AddHangfire(x =>
+//     x.UsePostgreSqlStorage(builder.Configuration.GetConnectionString("HangfireConnection")));
 
-builder.Services.AddHangfireServer();
+// builder.Services.AddHangfireServer();
 
 builder.Services.AddGrpcSwagger();
 builder.Services.AddSwaggerGen(c =>
@@ -76,9 +76,9 @@ else
     DotnetGRPC.GlobalVariables.Blob.Secret = builder.Configuration["SPACES_SECRET"];
 }
 
-app.UseHangfireServer();
+// app.UseHangfireServer();
 
-RecurringJob.AddOrUpdate<NotificationService>(service => service.SendNotifyPendingContribution(), Cron.Daily);
+// RecurringJob.AddOrUpdate<NotificationService>(service => service.SendNotifyPendingContribution(), Cron.Daily);
 
 // Configure the HTTP request pipeline.
 app.MapGrpcService<GreeterService>();
