@@ -15,11 +15,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 
+string connectionString = Environment.GetEnvironmentVariable("POSTGRESQLCONNSTR_DefaultConnection");
+
 // Add DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString(connectionString)));
 
-Console.WriteLine(builder.Configuration.GetConnectionString("DefaultConnection"));
+Console.WriteLine(builder.Configuration.GetConnectionString(connectionString));
 // Add repositories
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<TemplateRepository>();
@@ -35,7 +37,7 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 
 // Add Hangfire services
 builder.Services.AddHangfire(x =>
-    x.UsePostgreSqlStorage(builder.Configuration.GetConnectionString("HangfireConnection")));
+    x.UsePostgreSqlStorage(builder.Configuration.GetConnectionString(connectionString)));
 
 builder.Services.AddHangfireServer();
 
