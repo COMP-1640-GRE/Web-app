@@ -76,7 +76,6 @@ else
     DotnetGRPC.GlobalVariables.Blob.Secret = builder.Configuration["SPACES_SECRET"];
 }
 
-app.UseHangfireDashboard();
 app.UseHangfireServer();
 
 RecurringJob.AddOrUpdate<NotificationService>(service => service.SendNotifyPendingContribution(), Cron.Daily);
