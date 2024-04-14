@@ -38,7 +38,7 @@ builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
     .UseSimpleAssemblyNameTypeSerializer()
     .UseRecommendedSerializerSettings()
-    .UsePostgreSqlStorage(builder.Configuration.GetConnectionString("DefaultConnection"), new PostgreSqlStorageOptions
+    .UsePostgreSqlStorage(builder.Configuration.GetConnectionString("HangfireConnection"), new PostgreSqlStorageOptions
     {
         QueuePollInterval = TimeSpan.FromMilliseconds(50),
     }));
