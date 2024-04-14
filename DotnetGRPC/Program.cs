@@ -22,6 +22,7 @@ builder.Services.AddGrpcReflection();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+Console.WriteLine(builder.Configuration.GetConnectionString("DefaultConnection"));
 // Add repositories
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<TemplateRepository>();
