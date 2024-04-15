@@ -8,6 +8,9 @@ using Hangfire.PostgreSql;
 using Microsoft.Extensions.Azure;
 using Azure.Identity;
 using Azure.Core;
+using Azure.ResourceManager;
+using Azure.ResourceManager.PostgreSql;
+using Azure.ResourceManager.PostgreSql.FlexibleServers;
 using Microsoft.Azure.Management.WebSites;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -95,6 +98,7 @@ RecurringJob.AddOrUpdate<NotificationService>(service => service.SendNotifyPendi
 app.MapGrpcService<GreeterService>();
 app.MapGrpcService<FileTransferService>();
 app.MapGrpcService<NotificationService>();
+app.MapGrpcService<DatabaseService>();
 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
 app.MapGrpcReflectionService();
