@@ -8,6 +8,7 @@ using Hangfire.PostgreSql;
 using Microsoft.Extensions.Azure;
 using Azure.Identity;
 using Azure.Core;
+using Microsoft.Azure.Management.WebSites;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,20 +16,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 
-var credential = new Microsoft.Rest.TokenCredentials(DotnetGRPC.GlobalVariables.Database.BackupToken);
-var webSiteManagementClient = new Microsoft.Azure.Management.WebSites.WebSiteManagementClient(credential)
-{
-    SubscriptionId = "5f459f53-780f-4ffc-8604-0e47bbbfb746"
-};
-var appSettings = await webSiteManagementClient.WebApps.ListApplicationSettingsAsync("Comp-1640", "comp1640api.azurewebsites.net");
-
+// var credential = new Microsoft.Rest.TokenCredentials(DotnetGRPC.GlobalVariables.Database.BackupToken);
+// var webSiteManagementClient = new Microsoft.Azure.Management.WebSites.WebSiteManagementClient(credential)
+// {
+//     SubscriptionId = "5f459f53-780f-4ffc-8604-0e47bbbfb746"
+// };
+// var appSettings = await webSiteManagementClient.WebApps.ListApplicationSettingsAsync("Comp-1640", "comp1640api.azurewebsites.net");
+// Console.WriteLine(appSettings.Properties["DefaultConnection"]);
 // Retrieve the DefaultConnection setting
-string defaultConnection = appSettings.Properties["DefaultConnection"];
+string defaultConnection = Environment.GetEnvironmentVariable("DefaultConnection");
+
 // Add DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-Console.WriteLine(builder.Configuration.GetConnectionString("DefaultConnection"));
+Console.WriteLine(defaultConnection);
 // Add repositories
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<TemplateRepository>();
@@ -64,7 +66,7 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
 });
 
-// Console.WriteLine($"Backup Token: {DotnetGRPC.GlobalVariables.Database.BackupToken}");
+Console.WriteLine($"Backup Token: {DotnetGRPC.GlobalVariables.Database.BackupToken}");
 
 if (app.Environment.IsDevelopment())
 {
