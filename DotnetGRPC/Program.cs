@@ -19,21 +19,19 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 
-// var credential = new Microsoft.Rest.TokenCredentials(DotnetGRPC.GlobalVariables.Database.BackupToken);
-// var webSiteManagementClient = new Microsoft.Azure.Management.WebSites.WebSiteManagementClient(credential)
-// {
-//     SubscriptionId = "5f459f53-780f-4ffc-8604-0e47bbbfb746"
-// };
-// var appSettings = await webSiteManagementClient.WebApps.ListApplicationSettingsAsync("Comp-1640", "comp1640api.azurewebsites.net");
-// Console.WriteLine(appSettings.Properties["DefaultConnection"]);
+var credential = new Microsoft.Rest.TokenCredentials(DotnetGRPC.GlobalVariables.Database.BackupToken);
+var webSiteManagementClient = new Microsoft.Azure.Management.WebSites.WebSiteManagementClient(credential)
+{
+    SubscriptionId = "5f459f53-780f-4ffc-8604-0e47bbbfb746"
+};
+var appSettings = await webSiteManagementClient.WebApps.ListApplicationSettingsAsync("Comp-1640", "comp1640api");
+Console.WriteLine(appSettings.Properties["DefaultConnection"]);
 // Retrieve the DefaultConnection setting
-string defaultConnection = Environment.GetEnvironmentVariable("DefaultConnection");
 
 // Add DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(appSettings.Properties["DefaultConnection"]));
 
-Console.WriteLine(defaultConnection);
 // Add repositories
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<TemplateRepository>();
