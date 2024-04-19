@@ -187,24 +187,16 @@ namespace DotnetGRPC.Services
             var credentials = new Microsoft.Rest.TokenCredentials(GlobalVariables.Database.BackupToken);
             var postgresqlManagementClient = new PostgreSQLManagementClient(credentials)
             {
-                SubscriptionId = "5f459f53-780f-4ffc-8604-0e47bbbfb746"
+                SubscriptionId = GlobalVariables.Azure.SubscriptionId
             };
 
             // Create a new server instance
             var server = new Microsoft.Azure.Management.PostgreSQL.FlexibleServers.Models.Server
             {
                 Location = "southeastasia",
-
-                // Properties = new ServerPropertiesForDefaultCreate
-                // {
-                //     CreateMode = CreateMode.PointInTimeRestore,
-                //     SourceServerId = sourceServerId,
-                //     RestorePointInTime = restorePointInTime
-                // }
                 CreateMode = "PointInTimeRestore",
                 PointInTimeUTC = DateTime.Parse(restoreDatabaseToAnotherRequest.RestoreDate),
-                SourceServerResourceId = $"/subscriptions/5f459f53-780f-4ffc-8604-0e47bbbfb746/resourceGroups/Comp-1640/providers/Microsoft.DBforPostgreSQL/flexibleServers/{restoreDatabaseToAnotherRequest.SourceName}",
-
+                SourceServerResourceId = $"/subscriptions/{GlobalVariables.Azure.SubscriptionId}/resourceGroups/{GlobalVariables.Azure.ResourceGroup}/providers/Microsoft.DBforPostgreSQL/flexibleServers/{restoreDatabaseToAnotherRequest.SourceName}",
                 Sku = new Microsoft.Azure.Management.PostgreSQL.FlexibleServers.Models.Sku
                 {
                     Name = "Standard_B1ms",
@@ -214,16 +206,9 @@ namespace DotnetGRPC.Services
             };
 
             // Start the create operation
-            var operation = await postgresqlManagementClient.Servers.CreateAsync("Comp-1640", restoreDatabaseToAnotherRequest.ServerName, server);
-
-            // Wait for the operation to complete
-            // var result = await operation.WaitForCompletionAsync();
+            var operation = await postgresqlManagementClient.Servers.CreateAsync(GlobalVariables.Azure.ResourceGroup, restoreDatabaseToAnotherRequest.ServerName, server);         
 
             Console.WriteLine($"Done create the {operation.Id}");
-
-            // Stop the source server
-            // await postgresqlManagementClient.Servers.StopAsync("Comp-1640", restoreDatabaseToAnotherRequest.SourceName);
-
 
             return new Empty();
         }
@@ -234,11 +219,11 @@ namespace DotnetGRPC.Services
             var credentials = new Microsoft.Rest.TokenCredentials(GlobalVariables.Database.BackupToken);
             var postgresqlManagementClient = new PostgreSQLManagementClient(credentials)
             {
-                SubscriptionId = "5f459f53-780f-4ffc-8604-0e47bbbfb746"
+                SubscriptionId = GlobalVariables.Azure.SubscriptionId
             };
 
             // Stop the server
-            await postgresqlManagementClient.Servers.StopAsync("Comp-1640", stopDatabaseRequest.ServerName);
+            await postgresqlManagementClient.Servers.StopAsync(GlobalVariables.Azure.ResourceGroup, stopDatabaseRequest.ServerName);
 
             return new Empty();
         }
@@ -249,7 +234,7 @@ namespace DotnetGRPC.Services
             var credentials = new Microsoft.Rest.TokenCredentials(GlobalVariables.Database.BackupToken);
             var postgresqlManagementClient = new PostgreSQLManagementClient(credentials)
             {
-                SubscriptionId = "5f459f53-780f-4ffc-8604-0e47bbbfb746"
+                SubscriptionId = GlobalVariables.Azure.SubscriptionId
             };
 
             // Stop the server
@@ -266,7 +251,7 @@ namespace DotnetGRPC.Services
             {
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                var url = "https://management.azure.com/subscriptions/5f459f53-780f-4ffc-8604-0e47bbbfb746/resourceGroups/Comp-1640/providers/Microsoft.DBforPostgreSQL/flexibleServers?api-version=2023-12-01-preview";
+                var url = $"https://management.azure.com/subscriptions/{GlobalVariables.Azure.SubscriptionId}/resourceGroups/{GlobalVariables.Azure.ResourceGroup}/providers/Microsoft.DBforPostgreSQL/flexibleServers?api-version=2023-12-01-preview";
                 var response = await client.GetAsync(url);
 
                 var databaseServersResponse = new DatabaseServersResponse();
