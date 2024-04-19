@@ -2,8 +2,8 @@ using DotnetGRPC.Model.DTO;
 using DotnetGRPC.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-// using Hangfire;
-// using Hangfire.PostgreSql;
+using Hangfire;
+using Hangfire.PostgreSql;
 
 using Microsoft.Extensions.Azure;
 using Azure.Identity;
@@ -11,6 +11,7 @@ using Azure.Core;
 using Azure.ResourceManager;
 using Azure.ResourceManager.PostgreSql;
 using Azure.ResourceManager.PostgreSql.FlexibleServers;
+using Microsoft.Azure.Management.WebSites;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,11 +19,19 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 
+var credential = new Microsoft.Rest.TokenCredentials(DotnetGRPC.GlobalVariables.Database.BackupToken);
+var webSiteManagementClient = new Microsoft.Azure.Management.WebSites.WebSiteManagementClient(credential)
+{
+    SubscriptionId = "5f459f53-780f-4ffc-8604-0e47bbbfb746"
+};
+var appSettings = await webSiteManagementClient.WebApps.ListApplicationSettingsAsync("Comp-1640", "comp1640api");
+Console.WriteLine(appSettings.Properties["DefaultConnection"]);
+// Retrieve the DefaultConnection setting
+
 // Add DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(appSettings.Properties["DefaultConnection"]));
 
-Console.WriteLine(builder.Configuration.GetConnectionString("DefaultConnection"));
 // Add repositories
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<TemplateRepository>();
@@ -37,10 +46,10 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 // Add Hangfire services
-// builder.Services.AddHangfire(x =>
-//     x.UsePostgreSqlStorage(builder.Configuration.GetConnectionString("HangfireConnection")));
+builder.Services.AddHangfire(x =>
+    x.UsePostgreSqlStorage(builder.Configuration.GetConnectionString("HangfireConnection")));
 
-// builder.Services.AddHangfireServer();
+builder.Services.AddHangfireServer();
 
 builder.Services.AddGrpcSwagger();
 builder.Services.AddSwaggerGen(c =>
@@ -79,9 +88,9 @@ else
     DotnetGRPC.GlobalVariables.Blob.Secret = builder.Configuration["SPACES_SECRET"];
 }
 
-// app.UseHangfireServer();
+app.UseHangfireServer();
 
-// RecurringJob.AddOrUpdate<NotificationService>(service => service.SendNotifyPendingContribution(), Cron.Daily);
+RecurringJob.AddOrUpdate<NotificationService>(service => service.SendNotifyPendingContribution(), Cron.Daily);
 
 // Configure the HTTP request pipeline.
 app.MapGrpcService<GreeterService>();
