@@ -16,8 +16,9 @@ var request = new DownloadMultipleFileAsZipRequest
     Filename = "file",
     Urls =
     {
-        "https://comp1640-blob.sgp1.cdn.digitaloceanspaces.com/comp1640-blob/attachments/13/Will%20AI%20Lead%20To%20The%20End%20Of%20Marketing%20Jobs?.docx",
-        "https://comp1640-blob.sgp1.cdn.digitaloceanspaces.com/comp1640-blob/attachments/13/image1.webp",
+        "https://comp1640-blob.sgp1.cdn.digitaloceanspaces.com/comp1640-blob/attachments/21/Screenshot%202024-04-03%20173308.png",
+        "https://comp1640-blob.sgp1.cdn.digitaloceanspaces.com/comp1640-blob/attachments/21/Screenshot%202024-04-11%20212622.png",
+        "https://comp1640-blob.sgp1.cdn.digitaloceanspaces.com/comp1640-blob/attachments/21/chap78.docx"
     }
 };
 

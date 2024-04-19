@@ -118,7 +118,7 @@ namespace DotnetGRPC.Services
                         case ".mkv":
                             contentType = "video/x-matroska";
                             break;
-                            
+
                         // Add more cases as needed
                         default:
                             contentType = "application/octet-stream"; // Default to binary data
@@ -204,6 +204,7 @@ namespace DotnetGRPC.Services
 
                 foreach (var url in request.Urls)
                 {
+                    Console.WriteLine(url);
                     var uri = new Uri(url);
                     string[] parts = uri.AbsoluteUri.Split(new[] { Blob.Space }, StringSplitOptions.None);
                     string fileKey = parts.Length > 2 ? parts[2].TrimStart('/') : "";
