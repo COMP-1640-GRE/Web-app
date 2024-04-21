@@ -45,7 +45,7 @@ namespace DotnetGRPC.Services
                 mailMessage.Subject = template.TemplateName;
                 mailMessage.Body = template.TemplateContent
                     .Replace("[Student Name]", $"{student.FirstName} {student.LastName}")
-                    .Replace("[choose appropriate option]", option)
+                    .Replace("[choose appropriate option]", "has been" + option)
                     .Replace("[6-Letter Code]", option);
                 mailMessage.IsBodyHtml = true;
 
@@ -69,7 +69,7 @@ namespace DotnetGRPC.Services
                     await SendEmailAsync(request.UserId, request.TemplateCode.Replace("noti", "email"), request.Option);
                 }
                 var template = await _templateRepository.FindByTemplateCodeAsync(request.TemplateCode);
-                content = template.TemplateContent.Replace("[choose appropriate option]", request.Option);
+                content = template.TemplateContent.Replace("[choose appropriate option]", "has been" + request.Option);
 
                 var notification = new Model.Notification
                 {
@@ -113,7 +113,7 @@ namespace DotnetGRPC.Services
 
         public async Task SendNotifyPendingContribution()
         {
-            Console.WriteLine("Sending notification to faculty coordinators for pending contributions");
+           Console.WriteLine("Sending notification to faculty coordinators for pending contributions");
             var contributions = await _contributionRepository.FindPendingContributions14DaysAgo();
             if (contributions.Count == 0)
             {
@@ -140,7 +140,7 @@ namespace DotnetGRPC.Services
                         WithEmail = true
                     };
                     await _notificationRepository.SaveAsync(notification);
-
+                    Console.WriteLine("Notification sent to " + faculty.Name + " faculty coordinator");
                     using (var mailMessage = new MailMessage())
                     {
                         mailMessage.To.Add(new MailAddress(user.Email));
