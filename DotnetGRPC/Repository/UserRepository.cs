@@ -18,7 +18,7 @@ public class UserRepository
     public async Task<List<User>> FindFacultyCoordinators(long facultyId)
     {
         return await _context.User
-            .Where(user => user.FacultyId == facultyId && user.Role != "student")
+            .Where(user => user.FacultyId == facultyId && user.Role == "faculty_marketing_coordinator")
             .ToListAsync();
     }
 }
