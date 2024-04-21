@@ -16,12 +16,19 @@ var request = new DownloadMultipleFileAsZipRequest
     Filename = "file",
     Urls =
     {
-        "https://comp1640-blob.sgp1.cdn.digitaloceanspaces.com/comp1640-blob/demo/2022-01-17%2016-57-52-1.mp4",
-        "https://comp1640-blob.sgp1.cdn.digitaloceanspaces.com/comp1640-blob/demo/Arcane.S01e08.Oil.And.Water.1080P.Nf.Web-Dl.Ddp5.1.Hdr.Hevc-Tepes-1.m4v"
+        "https://comp1640-blob.sgp1.cdn.digitaloceanspaces.com/comp1640-blob/attachments/21/Screenshot%202024-04-03%20173308.png",
+        "https://comp1640-blob.sgp1.cdn.digitaloceanspaces.com/comp1640-blob/attachments/21/Screenshot%202024-04-11%20212622.png",
+        "https://comp1640-blob.sgp1.cdn.digitaloceanspaces.com/comp1640-blob/attachments/21/chap78.docx"
     }
 };
 
 using AsyncServerStreamingCall<DownloadMultipleFileAsZipResponse> call = client.DownloadMultipleFileAsZip(request);
+
+// if file exists, delete it
+if (File.Exists(request.Filename + ".zip"))
+{
+    File.Delete(request.Filename + ".zip");
+}
 
 long totalBytesRead = 0;
 long totalBytes = 0;

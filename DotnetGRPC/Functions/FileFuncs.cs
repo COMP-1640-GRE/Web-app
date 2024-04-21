@@ -67,6 +67,10 @@ namespace DotnetGRPC.Functions
 
                 contentStream.CopyToAsync(fileStream);
             }
+            else
+            {
+                throw new Exception("Failed to download file");
+            }
         }
     }
 }

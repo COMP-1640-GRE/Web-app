@@ -67,6 +67,58 @@ namespace DotnetGRPC.Services
                         case ".gif":
                             contentType = MediaTypeNames.Image.Gif;
                             break;
+                        case ".pdf":
+                            contentType = MediaTypeNames.Application.Pdf;
+                            break;
+                        case ".doc":
+                            contentType = "application/msword";
+                            break;
+                        case ".docx":
+                            contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+                            break;
+                        case ".xls":
+                            contentType = "application/vnd.ms-excel";
+                            break;
+                        case ".xlsx":
+                            contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                            break;
+                        case ".ppt":
+                            contentType = "application/vnd.ms-powerpoint";
+                            break;
+                        case ".pptx":
+                            contentType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+                            break;
+                        case ".zip":
+                            contentType = MediaTypeNames.Application.Zip;
+                            break;
+                        case ".rar":
+                            contentType = "application/x-rar-compressed";
+                            break;
+                        case ".7z":
+                            contentType = "application/x-7z-compressed";
+                            break;
+                        case ".mp4":
+                            contentType = "video/mp4";
+                            break;
+                        case ".mp3":
+                            contentType = "audio/mpeg";
+                            break;
+                        case ".wav":
+                            contentType = "audio/wav";
+                            break;
+                        case ".ogg":
+                            contentType = "audio/ogg";
+                            break;
+                        case ".flac":
+                            contentType = "audio/flac";
+                            break;
+                        case ".webm":
+                            contentType = "video/webm";
+                            break;
+                        case ".mkv":
+                            contentType = "video/x-matroska";
+                            break;
+
                         // Add more cases as needed
                         default:
                             contentType = "application/octet-stream"; // Default to binary data
@@ -152,6 +204,7 @@ namespace DotnetGRPC.Services
 
                 foreach (var url in request.Urls)
                 {
+                    Console.WriteLine(url);
                     var uri = new Uri(url);
                     string[] parts = uri.AbsoluteUri.Split(new[] { Blob.Space }, StringSplitOptions.None);
                     string fileKey = parts.Length > 2 ? parts[2].TrimStart('/') : "";
