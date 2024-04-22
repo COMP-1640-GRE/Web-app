@@ -19,11 +19,8 @@ namespace DotnetGRPC.Services
         {
             using (MemoryStream ms = new MemoryStream())
             {
-                // Create a new PDF document
                 Document document = new Document();
                 PdfWriter.GetInstance(document, ms);
-
-                // Open the document
                 document.Open();
 
                 // Add a title
