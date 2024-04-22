@@ -12,6 +12,7 @@
     <Protobuf Include="Protos\filetransfer.proto" GrpcServices="Server" />
     <Protobuf Include="Protos\notification.proto" GrpcServices="Server" />
     <Protobuf Include="Protos\database.proto" GrpcServices="Server" />
+    <Protobuf Include="Protos\report.proto" GrpcServices="Server" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AWSSDK.S3" Version="3.7.307.4" />
@@ -23,6 +24,7 @@
     <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.61.0" />
     <PackageReference Include="Hangfire.AspNetCore" Version="1.8.12" />
     <PackageReference Include="Hangfire.PostgreSql" Version="1.20.8" />
+    <PackageReference Include="iTextSharp" Version="5.5.13.3" />
     <PackageReference Include="Microsoft.AspNetCore.Grpc.Swagger" Version="0.8.3" />
     <PackageReference Include="Microsoft.Azure.Management.Websites" Version="3.1.1" />
     <PackageReference Include="Microsoft.Extensions.Azure" Version="1.7.2" />
