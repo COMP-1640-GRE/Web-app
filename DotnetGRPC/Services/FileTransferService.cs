@@ -180,9 +180,9 @@ namespace DotnetGRPC.Services
             };
         }
 
-        public override async Task DownloadMultipleFileAsZip(
+        public override async Task DownloadMultipleFileAsZipStream(
     DownloadMultipleFileAsZipRequest request,
-    IServerStreamWriter<DownloadMultipleFileAsZipResponse> responseStream,
+    IServerStreamWriter<DownloadMultipleFileAsZipResponseStream> responseStream,
     ServerCallContext context)
         {
             string tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
@@ -224,7 +224,7 @@ namespace DotnetGRPC.Services
             int bytesRead;
             while ((bytesRead = await fileStream.ReadAsync(buffer, 0, BufferSize)) > 0)
             {
-                await responseStream.WriteAsync(new DownloadMultipleFileAsZipResponse
+                await responseStream.WriteAsync(new DownloadMultipleFileAsZipResponseStream
                 {
                     Zip = ByteString.CopyFrom(buffer, 0, bytesRead),
                     Size = new FileInfo(zipFile).Length,
@@ -232,6 +232,50 @@ namespace DotnetGRPC.Services
                 });
             }
         }
+
+        public override async Task<DownloadMultipleFileAsZipResponse> DownloadMultipleFileAsZip (DownloadMultipleFileAsZipRequest request, ServerCallContext context)
+        {
+            string tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempFolder);
+            List<string> fileKeys = request.Urls.Select(url =>
+            {
+                var uri = new Uri(url);
+                string[] parts = uri.AbsoluteUri.Split(new[] { Blob.Space }, StringSplitOptions.None);
+                return parts.Length > 2 ? parts[2].TrimStart('/') : "";
+            }).ToList();
+
+            try
+            {
+                using var client = new AmazonS3Client(Blob.Key, Blob.Secret, _config);
+                if (!await Functions.FileFuncs.VerifyMultipleFiles(client, fileKeys))
+                {
+                    throw new RpcException(new Status(StatusCode.NotFound, "File not found"));
+                }
+
+                foreach (var url in request.Urls)
+                {
+                    var uri = new Uri(url);
+                    string[] parts = uri.AbsoluteUri.Split(new[] { Blob.Space }, StringSplitOptions.None);
+                    string fileKey = parts.Length > 2 ? parts[2].TrimStart('/') : "";
+                    await Functions.FileFuncs.DownloadAndSaveFile(new HttpClient(), url, tempFolder);
+                }
+            }
+            catch (AmazonS3Exception e)
+            {
+                throw new RpcException(new Status(StatusCode.Internal, e.Message));
+            }
+
+            string zipFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".zip");
+            ZipFile.CreateFromDirectory(tempFolder, zipFile);
+            byte[] byteArray = File.ReadAllBytes(zipFile);
+            return new DownloadMultipleFileAsZipResponse
+            {
+                Name = request.Filename + ".zip",
+                Zip = ByteString.CopyFrom(byteArray)
+            };
+        }
     }
+
+    
 
 }
